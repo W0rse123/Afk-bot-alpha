@@ -9,9 +9,10 @@ A lightweight, web-based control panel for managing multiple Minecraft bots on *
 ## ✨ Features
 
 * **Web Dashboard**: Control bots from any browser (mobile/desktop).
-* **Multi-Account Support**: Manage 2+ accounts simultaneously.
+* **Multi-Account Support**: Adding more than 2 accounts will be added
 * **Live Logs**: Real-time game chat, action bar, and error logs via WebSockets.
 * **Smart Anti-AFK**: Random head rotations to prevent AFK kicks (no hitting/swinging).
 * **Auto-Reconnect**: Automatically rejoins if kicked or disconnected.
 * **Connection Watchdog**: Detects "stuck" logins and restarts the process automatically.
 * **Chat Control**: Send chat commands directly from the web interface.
+* **Integration** : Integration to telegram or discord will be added
