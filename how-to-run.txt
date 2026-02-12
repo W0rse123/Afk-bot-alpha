@@ -1,0 +1,76 @@
+==============================================================================
+   DONUTSMP BOT - HOW TO START & RUN
+==============================================================================
+
+1. PREREQUISITES
+------------------------------------------------------------------------------
+Before you begin, ensure you have the following installed:
+- Node.js (Version 18 or higher)
+  Download: https://nodejs.org/
+
+2. INSTALLATION
+------------------------------------------------------------------------------
+Open your terminal (Command Prompt, PowerShell, or Terminal) in this folder 
+and run the following command to download the required libraries:
+
+    npm install
+
+This will create a 'node_modules' folder. Do not edit files inside it.
+
+3. CONFIGURATION
+------------------------------------------------------------------------------
+Open 'index.js' in a text editor (like Notepad, VS Code, or Sublime Text).
+
+Look for the "Configuration" section at the top:
+- const MC_HOST = 'donutsmp.net';  <-- Change this if you want a different server.
+- const MC_VERSION = '1.20.1';     <-- MUST match the server version exactly.
+                                     (Try 1.20.4 or 1.21 if 1.20.1 fails).
+
+4. STARTING THE BOT
+------------------------------------------------------------------------------
+You have two ways to start the bot:
+
+OPTION A: Simple Start (For testing)
+   Run this command in your terminal:
+   
+       node index.js
+
+   To stop it, press CTRL + C.
+
+OPTION B: 24/7 Background Mode (Recommended)
+   If you want the bot to stay online even if you close the terminal, use PM2.
+   
+   1. Install PM2 (only needs to be done once):
+      npm install pm2 -g
+      
+   2. Start the bot:
+      pm2 start index.js --name donuts-bot
+      
+   3. View logs:
+      pm2 logs donuts-bot
+      
+   4. Stop the bot:
+      pm2 stop donuts-bot
+
+5. USING THE WEB INTERFACE
+------------------------------------------------------------------------------
+Once the bot is running, open your web browser and go to:
+
+    http://localhost:3050
+
+- Enter your Microsoft Email in the box for Account 1 or 2.
+- Click "Start Session".
+- Follow the instructions in the console log if Microsoft asks you to authenticate 
+  (you may need to visit microsoft.com/link and enter a code the first time).
+
+6. TROUBLESHOOTING
+------------------------------------------------------------------------------
+- "Error: read ECONNRESET":
+  The server rejected the connection. 
+  FIX: Open index.js and change MC_VERSION to match the server version exactly.
+
+- Bot is stuck on "Connecting...":
+  Microsoft authentication might be pending. Check the console logs for a code.
+  The bot will auto-restart after 60 seconds if it fails to join.
+
+==============================================================================
