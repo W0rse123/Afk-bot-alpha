@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Bot Manager</title>
+    
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        body { 
+            background-color: #121212; /* Dark mode background */
+            color: #e0e0e0;            /* Light grey text */
+            font-family: 'Courier New', Courier, monospace; /* Monospaced font for a terminal look */
+            padding: 20px; 
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; /* Center the container */
+        }
+
+        /* ===== COMPONENT STYLES ===== */
+        .box { 
+            background: #1e1e1e;       /* Slightly lighter dark grey */
+            padding: 20px; 
+            border-radius: 8px;        /* Rounded corners */
+            margin-bottom: 20px; 
+            border: 1px solid #333;    /* Subtle border */
+        }
+
+        /* Input fields */
+        input[type="text"] { 
+            width: 70%; 
+            padding: 10px; 
+            background: #2c2c2c; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 4px;
+        }
+
+        /* Buttons (Blue default) */
+        button { 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            background: #007bff; 
+            border: none; 
+            color: white; 
+            border-radius: 4px; 
+            font-weight: bold;
+        }
+
+        /* Red button for "Stop" state */
+        button.stop { 
+            background: #dc3545; 
+        }
+
+        /* Hover effects */
+        button:hover { opacity: 0.9; }
+
+        /* ===== LOG TERMINAL ===== */
+        .log-box { 
+            height: 200px; 
+            overflow-y: scroll; /* Scrollbar if text gets too long */
+            background: #000; 
+            border: 1px solid #444; 
+            padding: 10px; 
+            font-size: 12px; 
+            margin-top: 10px; 
+            font-family: Consolas, monospace;
+        }
+
+        /* Status Indicator Dot */
+        .status-dot { 
+            height: 10px; 
+            width: 10px; 
+            background-color: #bbb; /* Grey (Offline) */
+            border-radius: 50%; 
+            display: inline-block; 
+            margin-right: 10px; 
+        }
+        .status-dot.online { 
+            background-color: #28a745; /* Green (Online) */
+            box-shadow: 0 0 5px #28a745; /* Glowing effect */
+        }
+
+        /* Flexbox layout for the global controls */
+        .global-controls { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🍩 DonutSMP Bot Controller</h1>
+
+        <div class="box global-controls">
+            <input type="text" id="globalInput" placeholder="Send command to ALL bots...">
+            <button onclick="sendGlobal()">Send to All</button>
+        </div>
+
+        <div id="bots-container"></div>
+    </div>
+
+    <script>
+        // 1. Initialize Socket Connection
+        const socket = io();
+        
+        // Define Bot IDs (Must match 'bots' object in index.js)
+        const bots = [1, 2];
+
+        // 2. Render HTML for each bot dynamically
+        const container = document.getElementById('bots-container');
+        
+        bots.forEach(id => {
+            const html = `
+                <div class="box" id="bot-${id}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>
+                            <span class="status-dot" id="dot-${id}"></span> 
+                            <span id="name-${id}">Account ${id}</span>
+                        </h3>
+                        <button id="btn-${id}" onclick="toggleBot(${id})">Start Session</button>
+                    </div>
+
+                    <div style="margin: 10px 0;">
+                        <input type="text" id="email-${id}" placeholder="Microsoft Email (e.g., user@outlook.com)">
+                    </div>
+
+                    <div class="log-box" id="logs-${id}"></div>
+
+                    <div style="margin-top: 10px; display:flex; gap:10px;">
+                        <input type="text" id="cmd-${id}" placeholder="Send command (/gamemode, hello, etc.)" 
+                               onkeydown="if(event.key==='Enter') sendCmd(${id})">
+                        <button onclick="sendCmd(${id})">Send</button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        // 3. EVENT HANDLERS (User Actions)
+
+        // Toggles the bot ON or OFF
+        function toggleBot(id) {
+            const email = document.getElementById(`email-${id}`).value;
+            if(!email) return alert("Please enter a Microsoft email first!");
+            
+            // Send 'toggle' event to backend
+            socket.emit('toggle', { id, email });
+        }
+
+        // Sends a specific command to one bot
+        function sendCmd(id) {
+            const input = document.getElementById(`cmd-${id}`);
+            if(input.value) {
+                socket.emit('command', { id, cmd: input.value });
+                input.value = ''; // Clear input after sending
+            }
+        }
+
+        // Sends a command to ALL active bots
+        function sendGlobal() {
+            const input = document.getElementById('globalInput');
+            if(input.value) {
+                socket.emit('global_command', input.value);
+                input.value = ''; // Clear input
+            }
+        }
+
+        // Appends a new message to the log window
+        function addLog(id, msg, type) {
+            const box = document.getElementById(`logs-${id}`);
+            const div = document.createElement('div');
+            
+            // Color coding based on message type
+            if (type === 'error') div.style.color = '#ff6b6b';      // Red
+            else if (type === 'success') div.style.color = '#51cf66'; // Green
+            else if (type === 'chat') div.style.color = '#ffffff';    // White
+            else div.style.color = '#888';                            // Grey (System)
+
+            div.textContent = msg;
+            box.appendChild(div);
+            
+            // Auto-scroll to the bottom
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 4. SOCKET LISTENERS (Backend Responses)
+
+        // Updates the UI (Button color, Status Dot) when bot state changes
+        socket.on('status', (data) => {
+            const btn = document.getElementById(`btn-${data.id}`);
+            const dot = document.getElementById(`dot-${data.id}`);
+            const name = document.getElementById(`name-${data.id}`);
+            
+            if (data.online) {
+                btn.textContent = "Stop Session";
+                btn.classList.add('stop'); // Turn button red
+                dot.classList.add('online'); // Turn dot green
+            } else {
+                btn.textContent = "Start Session";
+                btn.classList.remove('stop'); // Turn button blue
+                dot.classList.remove('online'); // Turn dot grey
+            }
+            
+            // Restore email and username if available
+            if(data.email) document.getElementById(`email-${data.id}`).value = data.email;
+            if(data.username) name.textContent = data.username;
+        });
+
+        // Receives new log messages
+        socket.on('log', (data) => {
+            addLog(data.id, data.msg, data.type);
+        });
+        
+        // Syncs the entire state (used when you refresh the page)
+        socket.on('sync_state', (data) => {
+            if(data.email) document.getElementById(`email-${data.id}`).value = data.email;
+            if(data.username) document.getElementById(`name-${data.id}`).textContent = data.username;
+            
+            // Replay past logs so the window isn't empty
+            if(data.logs) {
+                document.getElementById(`logs-${data.id}`).innerHTML = ''; // Clear old logs
+                data.logs.forEach(l => addLog(data.id, l.msg, l.type));
+            }
+            
+            // Manually trigger a status update to set buttons/dots correctly
+            // (We fake a status event since we have the data)
+            const btn = document.getElementById(`btn-${data.id}`);
+            const dot = document.getElementById(`dot-${data.id}`);
+            
+            if (data.online) {
+                btn.textContent = "Stop Session";
+                btn.classList.add('stop');
+                dot.classList.add('online');
+            } else {
+                btn.textContent = "Start Session";
+                btn.classList.remove('stop');
+                dot.classList.remove('online');
+            }
+        });
+
+    </script>
+</body>
+</html>
