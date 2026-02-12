@@ -1,4 +1,5 @@
-# 🍩 DonutSMP Web-Controlled Bot
+## In Alpha
+# 🍩 DonutSMP Web-Controlled Bot 
 
 A lightweight, web-based control panel for managing multiple Minecraft bots on **DonutSMP** (or any other server). Built with [Mineflayer](https://github.com/PrismarineJS/mineflayer), [Express](https://expressjs.com/), and [Socket.io](https://socket.io/).
 
